@@ -32,14 +32,13 @@ claim that the Tizen/Cobalt native decoder issue is fixed. Basic builds and
 automated tests have passed; hardware compatibility and reliability remain
 unknown.
 
-## Installation (only after a release is published)
+## Installation of the verified experimental commit
 
 TizenBrew can load a pinned GitHub module via the following identifier:
 
-`gh/kleinanzeigelv-create/TizenTube-Resume-Lab@v1.15.2-resume-test.5`
+`gh/kleinanzeigelv-create/TizenTube-Resume-Lab@088c4912ab64`
 
-This works **only if that public repository, tag, and jsDelivr files exist**.
-Do not enter the identifier until the release has actually been published.
+This identifier pins the exact verified Git commit (`088c4912ab642c187e23a6609c1bfc6cbf6cbe1d`), rather than relying on a mutable branch or an unpublished Git tag. The module manifest and compiled script were verified accessible on jsDelivr with SHA-256 identical to the tested local build.
 
 For an A/B test, keep your existing original TizenTube module installed.
 Add this as a separate TizenBrew module and manually select which module to
