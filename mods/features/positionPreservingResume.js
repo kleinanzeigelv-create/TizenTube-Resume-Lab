@@ -116,7 +116,10 @@ export function installPositionPreservingResume({
             // without a page reload. YouTube TV may not implement this API.
             const ticket = epoch;
             let observedState = false;
+            let resetAttempted = false;
+            let resetting = false;
             const listener = () => {
+                if (resetting) return;
                 if (disposed || doc.hidden || ticket !== epoch || !enabled()) return;
                 try {
                     if (getYoutubePlayer() !== current ||
@@ -155,9 +158,49 @@ export function installPositionPreservingResume({
             stateTimer = schedule(() => {
                 stateTimer = null;
                 if (disposed || doc.hidden || ticket !== epoch || !enabled()) return;
-                clearTimer();
-                emit(observedState ? 'YT_SESSION_STATE_ONLY' :
-                    'YT_SESSION_NO_STATE_EVENT');
+                try {
+                    // Never reset a new title, a replaced player or a session
+                    // that demonstrably progressed after the original request.
+                    if (getYoutubePlayer() !== current ||
+                        current.getVideoData()?.video_id !== saved.id) {
+                        clearTimer();
+                        emit('YT_SESSION_CHANGED_VIDEO');
+                        return;
+                    }
+                    const at = current.getCurrentTime();
+                    if (Number.isFinite(at) && at > saved.time + 1.5) {
+                        clearTimer();
+                        emit('YT_SESSION_TIME_PROGRESS');
+                        return;
+                    }
+                    // Only one bounded, opt-in resource reset per return.
+                    // Releasing the existing native stream is different from
+                    // reloading the entire page or restarting TizenBrew.
+                    if (resetAttempted ||
+                        typeof current.stopVideo !== 'function') {
+                        clearTimer();
+                        emit(resetAttempted ? 'YT_SESSION_RESET_STILL_STALLED' :
+                            'YT_SESSION_RESET_API_UNAVAILABLE');
+                        return;
+                    }
+                    resetAttempted = true;
+                    resetting = true;
+                    current.stopVideo();
+                    resetting = false;
+                    emit('YT_SESSION_RESET_REQUESTED');
+                    current.loadVideoById({
+                        videoId: saved.id, startSeconds: saved.time
+                    });
+                    stateTimer = schedule(() => {
+                        stateTimer = null;
+                        if (disposed || doc.hidden || ticket !== epoch || !enabled()) return;
+                        clearTimer();
+                        emit('YT_SESSION_RESET_UNCONFIRMED');
+                    }, 5000);
+                } catch (_) {
+                    clearTimer();
+                    emit('YT_SESSION_RESET_FAILED');
+                }
             }, 7000);
             emit('YT_SESSION_RECREATE_REQUESTED');
             current.loadVideoById({ videoId: saved.id, startSeconds: saved.time });

@@ -54,6 +54,7 @@ function mockYT({id='video-1',time=83.5,playing=true}={}){
         getCurrentTime(){return time},
         getPlayerStateObject(){return {isPlaying:playing}},
         pauseVideo(){calls.push('pause')},
+        stopVideo(){calls.push('stop')},
         loadVideoById(options){calls.push(['load',options])},
         addEventListener(name,fn){this._listener=fn},
         removeEventListener(name,fn){if(this._listener===fn)this._listener=null}
@@ -213,12 +214,23 @@ test('V6 updated method: onStateChange pauses new session at saved time',()=>{
  assert.equal(h.reports.length,2);
  h.cancel();
 });
-test('V6 updated method: timeout reports no state event and clears listener',()=>{
+test('V6 updated method: stalled session gets one bounded resource reset',()=>{
  const p=mockYT(),h=harness({player:p});
  h.emit(true);h.emit(false);h.advance(7350);
  assert.deepEqual(h.reports,
-     ['YT_SESSION_RECREATE_REQUESTED','YT_SESSION_NO_STATE_EVENT']);
- assert.equal(p._listener,null);h.cancel();
+     ['YT_SESSION_RECREATE_REQUESTED','YT_SESSION_RESET_REQUESTED']);
+ assert.deepEqual(p.calls,['pause',
+     ['load',{videoId:'video-1',startSeconds:83.5}],
+     'stop',['load',{videoId:'video-1',startSeconds:83.5}]]);
+ assert.equal(typeof p._listener,'function');
+ h.advance(5000);
+ assert.deepEqual(h.reports,
+     ['YT_SESSION_RECREATE_REQUESTED','YT_SESSION_RESET_REQUESTED',
+      'YT_SESSION_RESET_UNCONFIRMED']);
+ assert.equal(p._listener,null);
+ h.advance(90000);
+ assert.equal(p.calls.filter(x=>x==='stop').length,1);
+ h.cancel();
 });
 test('V6 updated method: another app switch clears prior player-state listener',()=>{
  const p=mockYT(),h=harness({player:p});
@@ -248,5 +260,63 @@ test('V6 updated method: disable after request cancels callback',()=>{
  p._listener();
  h.advance(9000);
  assert.deepEqual(h.reports,['YT_SESSION_RECREATE_REQUESTED']);
+ h.cancel();
+});
+
+test('V6 resource fallback never interrupts a different selected video',()=>{
+ let id='video-1';const p=mockYT();
+ p.getVideoData=()=>({video_id:id});
+ const h=harness({player:p});
+ h.emit(true);h.emit(false);h.advance(350);
+ id='next-title';
+ h.advance(7000);
+ assert.equal(p.calls.includes('stop'),false);
+ assert.equal(h.reports.at(-1),'YT_SESSION_CHANGED_VIDEO');
+ h.cancel();
+});
+test('V6 resource fallback never resets already-progressing playback',()=>{
+ let now=83.5;const p=mockYT();
+ p.getCurrentTime=()=>now;
+ const h=harness({player:p});
+ h.emit(true);h.emit(false);h.advance(350);
+ now=90;
+ h.advance(7000);
+ assert.equal(p.calls.includes('stop'),false);
+ assert.equal(h.reports.at(-1),'YT_SESSION_TIME_PROGRESS');
+ h.cancel();
+});
+test('V6 resource fallback skips without supported stop API',()=>{
+ const p=mockYT();delete p.stopVideo;
+ const h=harness({player:p});
+ h.emit(true);h.emit(false);h.advance(7350);
+ assert.equal(h.reports.at(-1),'YT_SESSION_RESET_API_UNAVAILABLE');
+ assert.equal(p.calls.filter(x=>Array.isArray(x)&&x[0]==='load').length,1);
+ h.cancel();
+});
+test('V6 resource fallback failure is bounded and isolated',()=>{
+ const p=mockYT();p.stopVideo=()=>{throw Error('decoder busy')};
+ const h=harness({player:p});
+ h.emit(true);h.emit(false);h.advance(7350);
+ assert.equal(h.reports.at(-1),'YT_SESSION_RESET_FAILED');
+ assert.equal(h.queue.size,0);h.cancel();
+});
+test('V6 resource fallback respects disabled option and new hide epoch',()=>{
+ const p=mockYT(),h=harness({player:p});
+ h.emit(true);h.emit(false);h.advance(350);h.setEnabled(false);
+ h.advance(7000);
+ assert.equal(p.calls.includes('stop'),false);
+ h.setEnabled(true);h.emit(true);h.emit(false);h.advance(350);
+ h.emit(true);h.advance(9000);
+ assert.equal(p.calls.includes('stop'),false);h.cancel();
+});
+test('V6 new player state after reset stops timeout without another reset',()=>{
+ const p=mockYT(),h=harness({player:p});
+ h.emit(true);h.emit(false);h.advance(7350);
+ p._listener();
+ assert.equal(p.calls.filter(x=>x==='stop').length,1);
+ assert.equal(h.reports.at(-1),'YT_SESSION_STATE_RECEIVED');
+ h.advance(9000);
+ assert.equal(p.calls.filter(x=>x==='stop').length,1);
+ assert.equal(h.queue.size,0);
  h.cancel();
 });
