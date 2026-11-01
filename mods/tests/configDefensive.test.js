@@ -13,6 +13,7 @@ test('missing TV configuration returns defaults without writing storage', async 
     const {config, storage} = await loadConfiguration();
     assert.equal(config.configRead('enableReloadOnResume'), false);
     assert.equal(config.configRead('enableResumePlaybackRecovery'), false);
+    assert.equal(config.configRead('enablePositionPreservingResume'), false);
     assert.equal(config.configRead('enableAdBlock'), true);
     assert.equal(storage['ytaf-configuration'], undefined);
 });
@@ -21,6 +22,7 @@ test('JSON null, arrays and primitives do not crash configuration reads', async 
         const {config, storage} = await loadConfiguration(raw);
         assert.equal(config.configRead('enableAdBlock'), true, raw);
         assert.equal(config.configRead('enableReloadOnResume'), false, raw);
+        assert.equal(config.configRead('enablePositionPreservingResume'), false, raw);
         assert.equal(storage['ytaf-configuration'], raw, 'preserve original raw config');
     }
 });
@@ -38,6 +40,7 @@ test('valid user settings are not reset by loading a newer version', async () =>
     assert.equal(config.configRead('enableAdBlock'),false);
     assert.equal(config.configRead('preferredVideoQuality'),'720p');
     assert.equal(config.configRead('enableResumePlaybackRecovery'),true);
+    assert.equal(config.configRead('enablePositionPreservingResume'),false);
     assert.equal(config.configRead('customKey'),'keep');
     assert.equal(storage['ytaf-configuration'],raw);
 });

@@ -1,8 +1,8 @@
 {
   "name": "tizentube-resume-lab",
   "appName": "TizenTube Resume Lab (experimental)",
-  "version": "1.15.2-resume-test.5",
-  "description": "Experimental TizenTube fork for Samsung Tizen app-switch playback recovery; not officially affiliated with TizenTube or TizenBrew.",
+  "version": "1.15.2-resume-test.6",
+  "description": "Experimental TizenTube recovery V6: position-preserving AVPlay/YouTube lifecycle paths and local diagnostics. Hardware outcome not yet verified.",
   "packageType": "mods",
   "websiteURL": "https://youtube.com/tv",
   "main": "dist/userScript.js",

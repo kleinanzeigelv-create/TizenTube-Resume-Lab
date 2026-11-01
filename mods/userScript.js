@@ -1,11 +1,13 @@
 import initPatches from "./features/standaloneUserscript.js";
 import { setupReloadOnResume } from "./features/reloadOnResume.js";
 import { setupResumePlaybackRecovery } from "./features/resumePlaybackRecovery.js";
+import { setupPositionPreservingResume } from "./features/positionPreservingResume.js";
 if (window.location.hostname === 'localhost') {
     initPatches();
 }
 setupReloadOnResume();
 setupResumePlaybackRecovery();
+setupPositionPreservingResume();
 import "./features/userAgentSpoofing.js";
 import "whatwg-fetch";
 import "core-js/proposals/object-getownpropertydescriptors";

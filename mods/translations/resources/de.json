@@ -109,7 +109,8 @@
                     "qualityAuto": "Automatisch",
                     "hideRelatedVideosPlayer": "Hide Related Videos",
                     "reloadOnResume": "Experimentell: YouTube-Seite bei Rückkehr zur App neu laden",
-                    "resumePlaybackRecovery": "Experimentell: Videowiedergabe nach App-Wechsel wiederherstellen (bei Stillstand neu laden)"
+                    "resumePlaybackRecovery": "Experimentell: Videowiedergabe nach App-Wechsel wiederherstellen (bei Stillstand neu laden)",
+                    "positionPreservingResume": "Experimentell: Videoposition beim App-Wechsel erhalten (Player-Reparatur, ohne Neuladen)"
                 }
             },
             "time": {

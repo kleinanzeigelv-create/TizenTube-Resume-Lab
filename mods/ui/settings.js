@@ -426,6 +426,11 @@ export default function modernUI(update, parameters) {
                     value: 'enableResumePlaybackRecovery'
                 },
                 {
+                    name: t('settings.options.videoPlayer.options.positionPreservingResume'),
+                    icon: 'SETTINGS',
+                    value: 'enablePositionPreservingResume'
+                },
+                {
                     name: t('settings.options.videoPlayer.options.hideRelatedVideosPlayer'),
                     icon: 'VISIBILITY_OFF',
                     value: 'hideRelatedVideosPlayer'

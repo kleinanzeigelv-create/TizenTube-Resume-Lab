@@ -65,6 +65,8 @@ const defaultConfig = {
   enableReloadOnResume: false,
   // Experimental stall-aware recovery, disabled by default.
   enableResumePlaybackRecovery: false,
+  // Experimental position-preserving lifecycle recovery, OFF by default.
+  enablePositionPreservingResume: false,
   autoFrameRatePauseVideoFor: 0,
   enableSigninReminder: false,
   sortSubscriptionsByAlphabet: false,
