@@ -67,6 +67,8 @@ const defaultConfig = {
   enableResumePlaybackRecovery: false,
   // Experimental position-preserving lifecycle recovery, OFF by default.
   enablePositionPreservingResume: false,
+  // Experimental fresh YouTube player session for same video and time.
+  enableSessionRecreateOnResume: false,
   autoFrameRatePauseVideoFor: 0,
   enableSigninReminder: false,
   sortSubscriptionsByAlphabet: false,

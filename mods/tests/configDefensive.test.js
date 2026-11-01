@@ -14,6 +14,7 @@ test('missing TV configuration returns defaults without writing storage', async 
     assert.equal(config.configRead('enableReloadOnResume'), false);
     assert.equal(config.configRead('enableResumePlaybackRecovery'), false);
     assert.equal(config.configRead('enablePositionPreservingResume'), false);
+    assert.equal(config.configRead('enableSessionRecreateOnResume'), false);
     assert.equal(config.configRead('enableAdBlock'), true);
     assert.equal(storage['ytaf-configuration'], undefined);
 });

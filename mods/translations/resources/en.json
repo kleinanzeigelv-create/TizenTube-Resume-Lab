@@ -113,7 +113,8 @@
                     "hideRelatedVideosPlayer": "Hide Related Videos",
                     "reloadOnResume": "Experimental: reload YouTube page when returning to app",
                     "resumePlaybackRecovery": "Experimental: recover video playback after app switching (reload only if stalled)",
-                    "positionPreservingResume": "Experimental: preserve video position across app switch (player recovery, no reload)"
+                    "positionPreservingResume": "Experimental: preserve video position across app switch (player recovery, no reload)",
+                    "sessionRecreateOnResume": "Experimental: recreate YouTube player session after app switch (no page reload)"
                 }
             },
             "time": {

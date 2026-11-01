@@ -431,6 +431,11 @@ export default function modernUI(update, parameters) {
                     value: 'enablePositionPreservingResume'
                 },
                 {
+                    name: t('settings.options.videoPlayer.options.sessionRecreateOnResume'),
+                    icon: 'SETTINGS',
+                    value: 'enableSessionRecreateOnResume'
+                },
+                {
                     name: t('settings.options.videoPlayer.options.hideRelatedVideosPlayer'),
                     icon: 'VISIBILITY_OFF',
                     value: 'hideRelatedVideosPlayer'

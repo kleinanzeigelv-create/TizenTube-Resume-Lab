@@ -1,8 +1,8 @@
 {
   "name": "tizentube-resume-lab",
   "appName": "TizenTube Resume Lab (experimental)",
-  "version": "1.15.2-resume-test.6",
-  "description": "Experimental TizenTube recovery V6: position-preserving AVPlay/YouTube lifecycle paths and local diagnostics. Hardware outcome not yet verified.",
+  "version": "1.15.2-resume-test.7",
+  "description": "Experimental TizenTube V7: guarded YouTube player session recreation for the same video and saved position, with local-only diagnostics. Hardware not yet verified.",
   "packageType": "mods",
   "websiteURL": "https://youtube.com/tv",
   "main": "dist/userScript.js",
