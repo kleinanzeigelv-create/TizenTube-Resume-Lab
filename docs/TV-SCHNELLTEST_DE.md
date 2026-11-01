@@ -14,10 +14,10 @@
 
 ## Erster Funktionstest (wenige Klicks)
 
-4. Ein beliebiges unkritisches Video starten. Im TizenTube-Einstellungsmenü unter **Videoplayer** zuerst sicherstellen:
+4. Im TizenTube-Einstellungsmenü unter **Videoplayer** zuerst sicherstellen:
    - **„Experimentell: Videowiedergabe nach App-Wechsel wiederherstellen (bei Stillstand neu laden)“ = EIN** (adaptive Wiederherstellung)
    - **„Experimentell: YouTube-Seite bei Rückkehr zur App neu laden“ = AUS** (alternativer Fallback)
-5. Während ein Video spielt, für etwa 20–30 Sekunden zu **Live-TV** wechseln und anschließend über Home zurück zum Testmodul. Prüfen: läuft Bild und Ton? Ist das Video eingefroren? Läuft ein **neu ausgewähltes Video**? Musste TizenBrew vollständig neu gestartet werden?
+5. Danach ein beliebiges unkritisches Video starten. **Während es tatsächlich läuft**, für etwa 20–30 Sekunden zu **Live-TV** wechseln und anschließend über Home zurück zum Testmodul. Prüfen: läuft Bild und Ton? Ist das Video eingefroren? Läuft ein **neu ausgewähltes Video**? Musste TizenBrew vollständig neu gestartet werden?
 6. Das Resultat mitteilen. Nur wenn der erste Versuch grundsätzlich funktioniert, denselben Wechsel mit **Moonlight** und **DeX** und anschließend mehrmals wiederholen. **Nicht** gleichzeitig beide experimentellen Schalter einschalten.
 
 ## Falls adaptiv scheitert
