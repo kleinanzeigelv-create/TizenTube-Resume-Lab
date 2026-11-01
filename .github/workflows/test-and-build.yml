@@ -27,7 +27,7 @@ jobs:
       - name: Verify committed TV module integrity
         shell: bash
         run: |
-          printf '%s  %s\n' '69a452706ef0e190abee7599f219b3d937db8e7e445b94b69ab9f133d55a90a7' 'dist/userScript.js' | sha256sum --check
+          printf '%s  %s\n' 'ae26eb30188448c551a4a098adca899647865c5af41ac91108cb7dc6eba2c2f0' 'dist/userScript.js' | sha256sum --check
 
       - name: Install locked dependencies (without install scripts)
         working-directory: mods

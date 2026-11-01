@@ -19,12 +19,23 @@ export function installPositionPreservingResume({
     let visibleBefore = doc.hidden === false;
     let snapshot = null;
     let timer = null;
+    let stateTimer = null;
+    let stateListener = null;
+    let statePlayer = null;
     let epoch = 0;
     let disposed = false;
 
     function clearTimer() {
         if (timer !== null) unschedule(timer);
+        if (stateTimer !== null) unschedule(stateTimer);
         timer = null;
+        stateTimer = null;
+        if (statePlayer && stateListener &&
+            typeof statePlayer.removeEventListener === 'function') {
+            try { statePlayer.removeEventListener('onStateChange', stateListener); } catch (_) {}
+        }
+        statePlayer = null;
+        stateListener = null;
     }
     function emit(code) {
         try { report(code); } catch (_) { /* diagnostics cannot break playback */ }
@@ -52,8 +63,7 @@ export function installPositionPreservingResume({
             player = getYoutubePlayer();
             if (!player ||
                 typeof player.getVideoData !== 'function' ||
-                typeof player.getCurrentTime !== 'function' ||
-                typeof player.seekTo !== 'function') return null;
+                typeof player.getCurrentTime !== 'function') return null;
             const data = player.getVideoData();
             const id = data && data.video_id;
             const time = player.getCurrentTime();
@@ -97,13 +107,63 @@ export function installPositionPreservingResume({
                 emit('YT_DIFFERENT_VIDEO');
                 return;
             }
-            // seekTo(seconds, allowSeekAhead) requests a fresh segment and may
-            // reinitialize a stalled decoder without resetting the video ID.
-            // It is a guarded best effort, not a validated Samsung workaround.
-            current.seekTo(saved.time, true);
-            emit('YT_SEEK_REQUESTED');
+            if (typeof current.loadVideoById !== 'function') {
+                emit('YT_SESSION_API_UNAVAILABLE');
+                return;
+            }
+            // Hardware V6 showed seekTo() was called but the decoder stayed
+            // frozen. Request a new media session for the SAME video and time,
+            // without a page reload. YouTube TV may not implement this API.
+            const ticket = epoch;
+            let observedState = false;
+            const listener = () => {
+                if (disposed || doc.hidden || ticket !== epoch || !enabled()) return;
+                try {
+                    if (getYoutubePlayer() !== current ||
+                        current.getVideoData()?.video_id !== saved.id) {
+                        clearTimer();
+                        emit('YT_SESSION_CHANGED_VIDEO');
+                        return;
+                    }
+                    const state = typeof current.getPlayerStateObject === 'function'
+                        ? current.getPlayerStateObject() : null;
+                    if (!state) return;
+                    if (state.isPlaying || state.isPaused || state.isBuffering)
+                        observedState = true;
+                    if (state.isPlaying && typeof current.pauseVideo === 'function') {
+                        const at = typeof current.getCurrentTime === 'function'
+                            ? current.getCurrentTime() : NaN;
+                        if (Number.isFinite(at) && at >= saved.time - 1) {
+                            current.pauseVideo();
+                            clearTimer();
+                            emit('YT_SESSION_STATE_RECEIVED');
+                        }
+                    } else if (state.isPaused) {
+                        clearTimer();
+                        emit('YT_SESSION_STATE_RECEIVED');
+                    }
+                } catch (_) {
+                    clearTimer();
+                    emit('YT_SESSION_STATE_FAILED');
+                }
+            };
+            if (typeof current.addEventListener === 'function') {
+                statePlayer = current;
+                stateListener = listener;
+                current.addEventListener('onStateChange', listener);
+            }
+            stateTimer = schedule(() => {
+                stateTimer = null;
+                if (disposed || doc.hidden || ticket !== epoch || !enabled()) return;
+                clearTimer();
+                emit(observedState ? 'YT_SESSION_STATE_ONLY' :
+                    'YT_SESSION_NO_STATE_EVENT');
+            }, 7000);
+            emit('YT_SESSION_RECREATE_REQUESTED');
+            current.loadVideoById({ videoId: saved.id, startSeconds: saved.time });
         } catch (_) {
-            emit('YT_SEEK_FAILED');
+            clearTimer();
+            emit('YT_SESSION_RECREATE_FAILED');
         }
     }
     function onVisibilityChange() {

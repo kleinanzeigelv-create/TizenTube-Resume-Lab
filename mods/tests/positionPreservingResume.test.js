@@ -54,7 +54,9 @@ function mockYT({id='video-1',time=83.5,playing=true}={}){
         getCurrentTime(){return time},
         getPlayerStateObject(){return {isPlaying:playing}},
         pauseVideo(){calls.push('pause')},
-        seekTo(t,advance){calls.push(['seek',t,advance])}
+        loadVideoById(options){calls.push(['load',options])},
+        addEventListener(name,fn){this._listener=fn},
+        removeEventListener(name,fn){if(this._listener===fn)this._listener=null}
     };
 }
 test('off by default: never touch any player',()=>{
@@ -81,8 +83,8 @@ test('inactive AVPlay falls back to YouTube without native writes',()=>{
  const api=mockAV('IDLE'),p=mockYT(),h=harness({avplay:api,player:p});
  h.emit(true);h.emit(false);h.advance(350);
  assert.deepEqual(api.calls,['getState']);
- assert.deepEqual(p.calls,['pause',['seek',83.5,true]]);
- assert.deepEqual(h.reports,['YT_SEEK_REQUESTED']);
+ assert.deepEqual(p.calls,['pause',['load',{videoId:'video-1',startSeconds:83.5}]]);
+ assert.deepEqual(h.reports,['YT_SESSION_RECREATE_REQUESTED']);
  h.cancel();
 });
 test('native API failure never mixes in YouTube seek',()=>{
@@ -99,13 +101,13 @@ test('YouTube resume preserves same video ID and exact seconds',()=>{
  h.emit(true);h.emit(false);h.advance(349);
  assert.deepEqual(p.calls,['pause']);
  h.advance(1);
- assert.deepEqual(p.calls,['pause',['seek',152.123,true]]);
+ assert.deepEqual(p.calls,['pause',['load',{videoId:'v-test',startSeconds:152.123}]]);
  h.cancel();
 });
 test('YouTube paused before switching remains paused',()=>{
  const p=mockYT({playing:false,time:44}),h=harness({player:p});
  h.emit(true);h.emit(false);h.advance(350);
- assert.deepEqual(p.calls,[['seek',44,true]]);
+ assert.deepEqual(p.calls,[['load',{videoId:'video-1',startSeconds:44}]]);
  h.cancel();
 });
 test('new video, same player object: no stale seek',()=>{
@@ -146,7 +148,7 @@ test('second switch invalidates outstanding delayed restoration',()=>{
 test('duplicate hidden events preserve snapshot',()=>{
  const p=mockYT(),h=harness({player:p});
  h.emit(true);h.emit(true);h.emit(false);h.advance(500);
- assert.deepEqual(p.calls,['pause',['seek',83.5,true]]);h.cancel();
+ assert.deepEqual(p.calls,['pause',['load',{videoId:'video-1',startSeconds:83.5}]]);h.cancel();
 });
 test('unmount cancels timers and unregisters listener',()=>{
  const p=mockYT(),h=harness({player:p});
@@ -159,7 +161,7 @@ test('initially backgrounded first foreground never restores',()=>{
  h.emit(false);h.advance(1000);
  assert.deepEqual(p.calls,[]);
  h.emit(true);h.emit(false);h.advance(1000);
- assert.deepEqual(p.calls,['pause',['seek',83.5,true]]);
+ assert.deepEqual(p.calls,['pause',['load',{videoId:'video-1',startSeconds:83.5}]]);
  h.cancel();
 });
 test('native restore exceptions are isolated',()=>{
@@ -168,10 +170,10 @@ test('native restore exceptions are isolated',()=>{
  const h=harness({avplay:a});h.emit(true);h.emit(false);h.advance(500);
  assert.deepEqual(h.reports,['AVPLAY_RESTORE_FAILED']);h.cancel();
 });
-test('YouTube seek exceptions cannot trigger a reload',()=>{
- const p=mockYT();p.seekTo=()=>{throw Error('unavailable')};
+test('YouTube session-recreate exceptions cannot trigger a reload',()=>{
+ const p=mockYT();p.loadVideoById=()=>{throw Error('unavailable')};
  const h=harness({player:p});h.emit(true);h.emit(false);h.advance(500);
- assert.deepEqual(h.reports,['YT_SEEK_FAILED']);h.cancel();
+ assert.deepEqual(h.reports,['YT_SESSION_RECREATE_REQUESTED','YT_SESSION_RECREATE_FAILED']);h.cancel();
 });
 test('Youtube missing ID, nonfinite position and ended state never seek',()=>{
  for (const variation of ['empty','infinite','ended']){
@@ -188,4 +190,63 @@ test('sync AVPlay fallback restores exactly once',()=>{
  let restored=0;a.restore=()=>restored++;
  const h=harness({avplay:a});h.emit(true);h.emit(false);h.advance(500);
  assert.equal(restored,1);assert.deepEqual(h.reports,['AVPLAY_RESTORE_OK']);h.cancel();
+});
+
+test('V6 fallback: private TV player without loadVideoById reports unavailable',()=>{
+ const p=mockYT();delete p.loadVideoById;
+ const h=harness({player:p});h.emit(true);h.emit(false);h.advance(700);
+ assert.deepEqual(p.calls,['pause']);
+ assert.deepEqual(h.reports,['YT_SESSION_API_UNAVAILABLE']);h.cancel();
+});
+test('V6 updated method: onStateChange pauses new session at saved time',()=>{
+ const p=mockYT(),h=harness({player:p});
+ h.emit(true);h.emit(false);h.advance(350);
+ assert.equal(typeof p._listener,'function');
+ p._listener();
+ assert.deepEqual(p.calls,['pause',
+     ['load',{videoId:'video-1',startSeconds:83.5}],'pause']);
+ assert.deepEqual(h.reports,
+     ['YT_SESSION_RECREATE_REQUESTED','YT_SESSION_STATE_RECEIVED']);
+ assert.equal(p._listener,null);
+ assert.equal(h.queue.size,0);
+ h.advance(10000);
+ assert.equal(h.reports.length,2);
+ h.cancel();
+});
+test('V6 updated method: timeout reports no state event and clears listener',()=>{
+ const p=mockYT(),h=harness({player:p});
+ h.emit(true);h.emit(false);h.advance(7350);
+ assert.deepEqual(h.reports,
+     ['YT_SESSION_RECREATE_REQUESTED','YT_SESSION_NO_STATE_EVENT']);
+ assert.equal(p._listener,null);h.cancel();
+});
+test('V6 updated method: another app switch clears prior player-state listener',()=>{
+ const p=mockYT(),h=harness({player:p});
+ h.emit(true);h.emit(false);h.advance(350);
+ assert.equal(typeof p._listener,'function');
+ h.emit(true);
+ assert.equal(p._listener,null);
+ h.advance(8000);
+ assert.deepEqual(h.reports,['YT_SESSION_RECREATE_REQUESTED']);
+ h.cancel();
+});
+test('V6 updated method: different video after request prevents pausing it',()=>{
+ let id='video-1';const p=mockYT();
+ p.getVideoData=()=>({video_id:id});
+ const h=harness({player:p});
+ h.emit(true);h.emit(false);h.advance(350);
+ id='another-video';p._listener();
+ assert.deepEqual(p.calls,['pause',
+     ['load',{videoId:'video-1',startSeconds:83.5}]]);
+ assert.equal(h.reports.at(-1),'YT_SESSION_CHANGED_VIDEO');
+ assert.equal(p._listener,null);h.cancel();
+});
+test('V6 updated method: disable after request cancels callback',()=>{
+ const p=mockYT(),h=harness({player:p});
+ h.emit(true);h.emit(false);h.advance(350);
+ h.setEnabled(false);
+ p._listener();
+ h.advance(9000);
+ assert.deepEqual(h.reports,['YT_SESSION_RECREATE_REQUESTED']);
+ h.cancel();
 });
