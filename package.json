@@ -1,0 +1,25 @@
+{
+  "name": "tizentube-resume-lab",
+  "appName": "TizenTube Resume Lab (experimental)",
+  "version": "1.15.2-resume-test.5",
+  "description": "Experimental TizenTube fork for Samsung Tizen app-switch playback recovery; not officially affiliated with TizenTube or TizenBrew.",
+  "packageType": "mods",
+  "websiteURL": "https://youtube.com/tv",
+  "main": "dist/userScript.js",
+  "author": "Reis Can",
+  "keys": [
+    "MediaPlayPause",
+    "MediaPlay",
+    "MediaPause",
+    "MediaStop",
+    "MediaFastForward",
+    "MediaRewind",
+    "MediaTrackNext",
+    "MediaTrackPrevious"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kleinanzeigelv-create/TizenTube-Resume-Lab.git"
+  },
+  "license": "GPL-3.0-only"
+}
