@@ -1,13 +1,16 @@
 # Testanleitung — Samsung Q60R (Tizen 5)
 
+**Kurzfassung für den Test direkt am TV:** [TV-SCHNELLTEST_DE.md](TV-SCHNELLTEST_DE.md).
+
 **Noch nicht auf dem TV erprobt.** Erst ausführen, wenn das öffentliche Repository mit dem festgelegten Git-Commit erreichbar ist. Die JavaScript-Datei wurde über jsDelivr bytegenau gegen den getesteten Build geprüft. Ein Git-Tag wird hierfür nicht benötigt. Dies ist ein Test einer modifizierten **TizenTube-Version**, kein
 Ersatz der produktiv installierten TizenBrew-App.
 
 1. **Original behalten:** Bestehendes TizenTube und Moonlight nicht löschen.
    Keine gespeicherten Google-Zugangsdaten verändern.
-2. **Separates Modul hinzufügen:** In TizenBrew exakt den freigegebenen
-   `gh/kleinanzeigelv-create/TizenTube-Resume-Lab@088c4912ab64` als separates Modul hinzufügen. Die Kurzfassung verweist auf Commit `088c4912ab642c187e23a6609c1bfc6cbf6cbe1d`. Die beiden Versionen
-   nicht gleichzeitig automatisch starten.
+2. **Separates Modul hinzufügen:** In TizenBrew unter **Modulverwaltung → GitHub-Modul hinzufügen** nur
+   `kleinanzeigelv-create/TizenTube-Resume-Lab@088c4912ab64` eingeben. **Kein `gh/` davor:** Das UI ergänzt es automatisch. Intern ist der vollständige Modul-Identifier
+   `gh/kleinanzeigelv-create/TizenTube-Resume-Lab@088c4912ab64`. Der fixierte Commit lautet `088c4912ab642c187e23a6609c1bfc6cbf6cbe1d`. Die beiden Versionen
+   nicht gleichzeitig automatisch starten. **Das Modul über die Startansicht wählen; Anklicken in der Modulverwaltung öffnet die Löschbestätigung.**
 3. **Kontrollversuch:** Testversion starten, ein unkritisches Video abspielen,
    bei ausgeschalteten Wiederherstellungsoptionen zu Live-TV wechseln,
    anschließend zurückkehren. Bild, Ton, Navigation und nächstes Video prüfen.

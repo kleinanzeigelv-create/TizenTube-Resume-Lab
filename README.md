@@ -51,7 +51,7 @@ test. If it does not work, disable adaptive recovery and test *reload on
 resume* separately. Compare identical videos and switches to TV/Moonlight/DeX.
 The original application is the rollback baseline.
 
-See [German test instructions](docs/TESTANLEITUNG_DE.md).
+For the minimum-click TV procedure, see the [German Q60R quick test guide](docs/TV-SCHNELLTEST_DE.md) or the [detailed German instructions](docs/TESTANLEITUNG_DE.md). In TizenBrew's **Add GitHub Module** input enter `kleinanzeigelv-create/TizenTube-Resume-Lab@088c4912ab64` **without** `gh/`, because that screen adds the prefix automatically.
 
 ### Intentionally excluded from this temporary variant
 
