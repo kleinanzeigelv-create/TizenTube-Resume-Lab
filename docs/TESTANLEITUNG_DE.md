@@ -1,14 +1,12 @@
 # Testanleitung — Samsung Q60R (Tizen 5)
 
-**Noch nicht auf dem TV erprobt.** Erst ausführen, wenn das öffentliche
-Repository mit dem angegebenen Tag existiert und das Modul im TizenBrew-Menü
-erscheint. Dies ist ein Test einer modifizierten **TizenTube-Version**, kein
+**Noch nicht auf dem TV erprobt.** Erst ausführen, wenn das öffentliche Repository mit dem festgelegten Git-Commit erreichbar ist. Die JavaScript-Datei wurde über jsDelivr bytegenau gegen den getesteten Build geprüft. Ein Git-Tag wird hierfür nicht benötigt. Dies ist ein Test einer modifizierten **TizenTube-Version**, kein
 Ersatz der produktiv installierten TizenBrew-App.
 
 1. **Original behalten:** Bestehendes TizenTube und Moonlight nicht löschen.
    Keine gespeicherten Google-Zugangsdaten verändern.
 2. **Separates Modul hinzufügen:** In TizenBrew exakt den freigegebenen
-   `gh/...@v1.15.2-resume-test.5`-Modulnamen hinzufügen. Die beiden Versionen
+   `gh/kleinanzeigelv-create/TizenTube-Resume-Lab@088c4912ab64` als separates Modul hinzufügen. Die Kurzfassung verweist auf Commit `088c4912ab642c187e23a6609c1bfc6cbf6cbe1d`. Die beiden Versionen
    nicht gleichzeitig automatisch starten.
 3. **Kontrollversuch:** Testversion starten, ein unkritisches Video abspielen,
    bei ausgeschalteten Wiederherstellungsoptionen zu Live-TV wechseln,
